@@ -4,12 +4,20 @@ import { Text } from '@/components/ui/text';
 import { Stack } from 'expo-router';
 import useSWR, { mutate } from 'swr';
 import * as React from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, Platform } from 'react-native';
+import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps';
 import { api, type Event } from '@/lib/api';
 
 const SCREEN_OPTIONS = {
   title: 'Evently',
   headerRight: () => <ThemeToggle />,
+};
+
+const INDIA_CENTER = {
+  latitude: 20.5937,
+  longitude: 78.9629,
+  latitudeDelta: 15,
+  longitudeDelta: 15,
 };
 
 export default function Screen() {
@@ -43,8 +51,27 @@ export default function Screen() {
   return (
     <>
       <Stack.Screen options={SCREEN_OPTIONS} />
-      <ScrollView className="flex-1 bg-background p-4">
-        <View className="gap-4">
+      <ScrollView className="flex-1 bg-background">
+        <View className="h-64">
+          <MapView
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+            style={{ flex: 1 }}
+            initialRegion={INDIA_CENTER}>
+            {events?.map((event) => (
+              <Marker
+                key={event._id}
+                coordinate={{
+                  latitude: event.location.coordinates[1],
+                  longitude: event.location.coordinates[0],
+                }}
+                title={event.title}
+                description={new Date(event.date).toLocaleString()}
+              />
+            ))}
+          </MapView>
+        </View>
+
+        <View className="gap-4 p-4">
           <Text className="text-2xl font-bold">Create Event</Text>
 
           <View className="gap-2">
